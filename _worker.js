@@ -1,3 +1,16 @@
+/**
+ * Cloudflare Pages VLESS 节点代码
+ * 
+ * 阿荣歌歌，这是为您准备的最稳健、速度最快的 VLESS 节点代码。
+ * 
+ * 您的用户 ID (UUID): 88efffcc-4d85-453a-9c06-5a273b2f54e1
+ * 
+ * 使用方法：
+ * 1. 复制本文件所有内容。
+ * 2. 在 GitHub 的 _worker.js 中全选并替换。
+ * 3. 保存 (Commit changes)。
+ */
+
 import { connect } from 'cloudflare:sockets';
 
 // 核心配置
@@ -215,3 +228,14 @@ function safeCloseWebSocket(socket) {
 function getVLESSConfig(userID, hostName) {
   const vlessMain = `vless://${userID}@${hostName}:443?encryption=none&security=tls&sni=${hostName}&type=ws&host=${hostName}&path=%2F#${hostName}`;
   return `
+################################################################
+您的 VLESS 节点配置 (一键导入链接):
+################################################################
+
+${vlessMain}
+
+################################################################
+使用方法:
+1. 复制上面的 vless:// 开头的链接。
+2. 打开 v2rayN，直接按 Ctrl+V 粘贴即可。
+################################################################
