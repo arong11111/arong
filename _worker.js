@@ -1,7 +1,7 @@
 /**
- * Cloudflare Pages VLESS 节点代码 (优选 IP 增强版)
+ * Cloudflare Pages VLESS 节点代码 (反代域名终极版)
  * 
- * 阿荣歌歌，这是为您准备的增强版代码，内置了目前连接最顺畅的优选 IP。
+ * 阿荣歌歌，这是为您准备的终极版代码，使用了反代域名来绕过封锁。
  * 
  * 您的用户 ID (UUID): 88efffcc-4d85-453a-9c06-5a273b2f54e1
  */
@@ -10,15 +10,15 @@ import { connect } from 'cloudflare:sockets';
 
 const userID = '88efffcc-4d85-453a-9c06-5a273b2f54e1';
 
-// 优选 IP 列表 - 这些 IP 目前在国内连接 Cloudflare 速度最快
+// 反代域名列表 - 这些域名目前在国内连接 Cloudflare 效果最好
 const proxyIPs = [
-  '104.16.160.1',
-  '172.67.180.1',
-  '104.21.50.1',
-  '162.159.138.1',
-  'cdn.cloudflare.com',
-  'icook.tw',
-  'cloudflare.com'
+  'visa.com',
+  'visa.com.hk',
+  'visa.cn',
+  'skk.moe',
+  'itdog.cn',
+  'www.wto.org',
+  'www.who.int'
 ];
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
@@ -144,7 +144,7 @@ async function vlessOverWSHandler(request) {
 
       const rawClientData = vlessBuffer.slice(addressValueIndex + addressLength);
 
-      // 使用优选 IP 进行连接
+      // 使用反代域名进行连接
       remoteConnection = connect({
         hostname: proxyIP,
         port: port,
