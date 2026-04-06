@@ -1,19 +1,13 @@
 /**
- * Cloudflare Pages VLESS 节点代码
+ * Cloudflare Pages VLESS 节点代码 (终极修复版)
  * 
- * 阿荣歌歌，这是为您准备的最稳健、速度最快的 VLESS 节点代码。
+ * 阿荣歌歌，这是为您准备的最稳健、兼容性最好的 VLESS 节点代码。
  * 
  * 您的用户 ID (UUID): 88efffcc-4d85-453a-9c06-5a273b2f54e1
- * 
- * 使用方法：
- * 1. 复制本文件所有内容。
- * 2. 在 GitHub 的 _worker.js 中全选并替换。
- * 3. 保存 (Commit changes)。
  */
 
 import { connect } from 'cloudflare:sockets';
 
-// 核心配置
 const userID = '88efffcc-4d85-453a-9c06-5a273b2f54e1';
 const proxyIPs = ['cdn.cloudflare.com', 'cdn-all.elestack.com', 'edgetunnel.pages.dev'];
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
@@ -43,13 +37,9 @@ export default {
   },
 };
 
-/**
- * 处理 VLESS over WebSocket
- */
 async function vlessOverWSHandler(request) {
   const webSocketPair = new Array(2);
   const [client, server] = Object.values(new WebSocketPair());
-
   server.accept();
 
   let address = '';
@@ -65,18 +55,15 @@ async function vlessOverWSHandler(request) {
         const message = event.data;
         controller.enqueue(message);
       });
-
       server.addEventListener('close', () => {
         safeCloseWebSocket(server);
         controller.close();
       });
-
       server.addEventListener('error', (err) => {
         log('server has error', err);
         safeCloseWebSocket(server);
         controller.error(err);
       });
-
       const { earlyData, error } = base64ToArrayBuffer(earlyDataHeader);
       if (error) {
         controller.error(error);
@@ -84,7 +71,6 @@ async function vlessOverWSHandler(request) {
         controller.enqueue(earlyData);
       }
     },
-
     pull(controller) {},
     cancel(reason) {
       log(`ReadableStream was canceled, reason: ${reason}`);
@@ -93,7 +79,6 @@ async function vlessOverWSHandler(request) {
   });
 
   let remoteConnection = null;
-  let remoteChunkCount = 0;
   let isVlessHeaderResolved = false;
 
   readableStream.pipeTo(new WritableStream({
@@ -103,24 +88,16 @@ async function vlessOverWSHandler(request) {
         return;
       }
       const vlessBuffer = chunk;
-      if (vlessBuffer.byteLength < 24) {
-        return;
-      }
+      if (vlessBuffer.byteLength < 24) return;
 
       const version = new Uint8Array(vlessBuffer.slice(0, 1));
       const uuid = new Uint8Array(vlessBuffer.slice(1, 17));
-      if (!isUUIDMatch(uuid, userID)) {
-        return;
-      }
+      if (!isUUIDMatch(uuid, userID)) return;
 
       const optLength = new Uint8Array(vlessBuffer.slice(17, 18))[0];
       const command = new Uint8Array(vlessBuffer.slice(18 + optLength, 19 + optLength))[0];
 
-      if (command === 1) {
-        // TCP
-      } else {
-        return;
-      }
+      if (command !== 1) return;
 
       const portIndex = 19 + optLength;
       const portBuffer = vlessBuffer.slice(portIndex, portIndex + 2);
@@ -128,7 +105,6 @@ async function vlessOverWSHandler(request) {
 
       const addressIndex = portIndex + 2;
       const addressBuffer = new Uint8Array(vlessBuffer.slice(addressIndex, addressIndex + 1));
-
       const addressType = addressBuffer[0];
       let addressLength = 0;
       let addressValueIndex = addressIndex + 1;
@@ -147,9 +123,7 @@ async function vlessOverWSHandler(request) {
           addressLength = 16;
           const dataView = new DataView(vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
           const ipv6 = [];
-          for (let i = 0; i < 8; i++) {
-            ipv6.push(dataView.getUint16(i * 2).toString(16));
-          }
+          for (let i = 0; i < 8; i++) ipv6.push(dataView.getUint16(i * 2).toString(16));
           addressValue = ipv6.join(':');
           break;
         default:
@@ -239,3 +213,5 @@ ${vlessMain}
 1. 复制上面的 vless:// 开头的链接。
 2. 打开 v2rayN，直接按 Ctrl+V 粘贴即可。
 ################################################################
+`;
+}
